@@ -65,3 +65,53 @@ def test_add_chunks_zero_si_tous_existants():
 
     assert added == 0
     mock_collection.add.assert_not_called()
+
+
+# --- retriever ---
+
+def test_retrieve_and_generate_retourne_reponse_et_sources():
+    """retrieve_and_generate retourne un dict avec 'answer' et 'sources'."""
+    from src.rag.retriever import retrieve_and_generate
+
+    mock_model = MagicMock()
+    mock_model.encode.return_value = np.array([0.1] * 768)
+
+    mock_collection = MagicMock()
+    mock_collection.query.return_value = {
+        "documents": [["Stratégie active pour cours magistral."]],
+        "metadatas": [[{"source": "pedagogie.pdf", "type": "pdf"}]],
+        "distances": [[0.08]],
+    }
+
+    with patch("src.rag.retriever.generate", return_value="Voici ma recommandation."):
+        result = retrieve_and_generate("Stratégie pour cours magistral ?", mock_model, mock_collection)
+
+    assert "answer" in result
+    assert result["answer"] == "Voici ma recommandation."
+    assert "sources" in result
+    assert len(result["sources"]) == 1
+    assert result["sources"][0]["source"] == "pedagogie.pdf"
+
+
+def test_retrieve_and_generate_tronque_si_contexte_trop_long():
+    """Le contexte est tronqué si les chunks dépassent MAX_CONTEXT_CHARS."""
+    from src.rag.retriever import retrieve_and_generate
+    from config import settings
+
+    mock_model = MagicMock()
+    mock_model.encode.return_value = np.array([0.1] * 768)
+
+    long_chunk = "mot " * 3000  # 12000 chars : entre dans le premier chunk, pas le second
+    mock_collection = MagicMock()
+    mock_collection.query.return_value = {
+        "documents": [[long_chunk, long_chunk, long_chunk, long_chunk, long_chunk]],
+        "metadatas": [[{"source": f"doc{i}.pdf", "type": "pdf"} for i in range(5)]],
+        "distances": [[0.1, 0.2, 0.3, 0.4, 0.5]],
+    }
+
+    with patch("src.rag.retriever.generate", return_value="Réponse.") as mock_gen:
+        retrieve_and_generate("Question ?", mock_model, mock_collection, top_k=5)
+        prompt_used = mock_gen.call_args.args[0]
+
+    # Le prompt total ne doit pas dépasser MAX_CONTEXT_CHARS + overhead du template (~500 chars)
+    assert len(prompt_used) <= settings.MAX_CONTEXT_CHARS + 500
