@@ -104,3 +104,37 @@ def test_chunk_dataframe_conserve_source_et_type():
     result = chunk_dataframe(df)
     assert all(result["source"] == "cours.pdf")
     assert all(result["type"] == "pdf")
+
+
+import numpy as np
+from unittest.mock import MagicMock
+from src.pipeline.embedder import embed_chunks
+
+
+def test_embed_chunks_ajoute_colonne_embedding():
+    """embed_chunks ajoute une colonne 'embedding' avec des vecteurs de 768 dimensions."""
+    df = pd.DataFrame([
+        {"chunk_id": "id1", "text": "Texte pédagogique.", "source": "a.pdf",
+         "type": "pdf", "chunk_index": 0},
+    ])
+    mock_model = MagicMock()
+    mock_model.encode.return_value = np.array([[0.1] * 768])
+
+    result = embed_chunks(df, mock_model)
+
+    assert "embedding" in result.columns
+    assert len(result["embedding"].iloc[0]) == 768
+
+
+def test_embed_chunks_ne_modifie_pas_original():
+    """embed_chunks retourne un nouveau DataFrame sans modifier l'original."""
+    df = pd.DataFrame([
+        {"chunk_id": "id1", "text": "Texte.", "source": "a.pdf", "type": "pdf", "chunk_index": 0},
+    ])
+    mock_model = MagicMock()
+    mock_model.encode.return_value = np.array([[0.1] * 768])
+
+    result = embed_chunks(df, mock_model)
+
+    assert "embedding" not in df.columns
+    assert "embedding" in result.columns
