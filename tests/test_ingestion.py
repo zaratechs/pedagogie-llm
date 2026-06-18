@@ -62,3 +62,45 @@ def test_load_pdf_erreur_lecture_retourne_skipped(tmp_path):
         result = load_pdf(fake_path)
 
     assert result["skipped"] is True
+
+
+# --- docx_loader ---
+
+def test_load_docx_valide_retourne_texte(tmp_path):
+    """Un fichier DOCX valide retourne son texte."""
+    from src.ingestion.docx_loader import load_docx
+
+    fake_path = tmp_path / "cours.docx"
+    fake_path.touch()
+
+    mock_para1 = MagicMock()
+    mock_para1.text = "Introduction à la pédagogie collégiale. " * 5
+    mock_para2 = MagicMock()
+    mock_para2.text = "Contenu du cours. " * 10
+    mock_doc = MagicMock()
+    mock_doc.paragraphs = [mock_para1, mock_para2]
+
+    with patch("src.ingestion.docx_loader.Document", return_value=mock_doc):
+        result = load_docx(fake_path)
+
+    assert result["skipped"] is False
+    assert "pédagogie" in result["text"]
+    assert result["type"] == "docx"
+
+
+def test_load_docx_trop_court_retourne_skipped(tmp_path):
+    """Un DOCX avec trop peu de texte est marqué skipped."""
+    from src.ingestion.docx_loader import load_docx
+
+    fake_path = tmp_path / "vide.docx"
+    fake_path.touch()
+
+    mock_doc = MagicMock()
+    mock_para = MagicMock()
+    mock_para.text = "Court"
+    mock_doc.paragraphs = [mock_para]
+
+    with patch("src.ingestion.docx_loader.Document", return_value=mock_doc):
+        result = load_docx(fake_path)
+
+    assert result["skipped"] is True
