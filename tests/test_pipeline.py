@@ -59,3 +59,48 @@ def test_save_skipped_cree_csv(tmp_path):
     saved = pd.read_csv(tmp_path / "skipped.csv")
     assert len(saved) == 1
     assert "vide.pdf" in saved["source"].values
+
+
+from src.pipeline.chunker import chunk_text, chunk_dataframe
+
+
+def test_chunk_text_taille_correcte():
+    """Chaque chunk (sauf le dernier) fait au plus chunk_size mots."""
+    text = " ".join([f"mot{i}" for i in range(1200)])
+    chunks = chunk_text(text, chunk_size=500, overlap=50)
+    for chunk in chunks[:-1]:
+        assert len(chunk.split()) <= 500
+
+
+def test_chunk_text_chevauchement():
+    """Les 50 derniers mots d'un chunk sont les 50 premiers du suivant."""
+    text = " ".join([f"mot{i}" for i in range(600)])
+    chunks = chunk_text(text, chunk_size=500, overlap=50)
+    assert len(chunks) >= 2
+    last_50_chunk0 = chunks[0].split()[-50:]
+    first_50_chunk1 = chunks[1].split()[:50]
+    assert last_50_chunk0 == first_50_chunk1
+
+
+def test_chunk_text_texte_court_donne_un_seul_chunk():
+    text = "mot " * 100
+    chunks = chunk_text(text, chunk_size=500, overlap=50)
+    assert len(chunks) == 1
+
+
+def test_chunk_dataframe_produit_chunk_ids_uniques():
+    df = pd.DataFrame([
+        {"text": "mot " * 600, "source": "a.pdf", "type": "pdf", "content_hash": "abc"}
+    ])
+    result = chunk_dataframe(df)
+    assert "chunk_id" in result.columns
+    assert result["chunk_id"].nunique() == len(result)
+
+
+def test_chunk_dataframe_conserve_source_et_type():
+    df = pd.DataFrame([
+        {"text": "mot " * 600, "source": "cours.pdf", "type": "pdf", "content_hash": "abc"}
+    ])
+    result = chunk_dataframe(df)
+    assert all(result["source"] == "cours.pdf")
+    assert all(result["type"] == "pdf")
