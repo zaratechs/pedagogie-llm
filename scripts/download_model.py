@@ -1,4 +1,8 @@
 """Télécharge le modèle d'embedding une seule fois. Lancer avant build_index.py."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from sentence_transformers import SentenceTransformer
 from config.settings import EMBEDDING_MODEL
 

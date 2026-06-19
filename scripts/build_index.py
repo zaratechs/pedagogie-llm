@@ -5,10 +5,15 @@ Usage :
 
 Relancer après chaque ajout de nouveaux documents.
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import logging
 from config.settings import RAW_DIR, PROCESSED_DIR, ERRORS_DIR
 from src.ingestion.pdf_loader import load_pdfs_from_dir
 from src.ingestion.docx_loader import load_docx_from_dir
+from src.ingestion.web_scraper import scrape_urls
 from src.pipeline.cleaner import build_dataframe, save_skipped
 from src.pipeline.chunker import chunk_dataframe
 from src.pipeline.embedder import load_model, embed_chunks
@@ -25,6 +30,14 @@ def main() -> None:
     documents = []
     documents.extend(load_pdfs_from_dir(RAW_DIR))
     documents.extend(load_docx_from_dir(RAW_DIR))
+
+    urls_file = RAW_DIR / "urls.txt"
+    if urls_file.exists():
+        urls = [u.strip() for u in urls_file.read_text(encoding="utf-8").splitlines() if u.strip() and not u.startswith("#")]
+        if urls:
+            logger.info(f"  {len(urls)} URL(s) trouvées dans urls.txt — scraping en cours...")
+            documents.extend(scrape_urls(urls, save_dir=PROCESSED_DIR / "web"))
+
     logger.info(f"  {len(documents)} documents chargés")
 
     save_skipped(documents, ERRORS_DIR)
