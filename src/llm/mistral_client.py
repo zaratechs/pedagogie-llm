@@ -1,4 +1,4 @@
-from mistralai.client import Mistral
+from mistralai import Mistral
 from config.settings import MISTRAL_API_KEY, MISTRAL_MODEL
 
 
