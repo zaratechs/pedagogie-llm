@@ -5,8 +5,7 @@ requests==2.31.0
 beautifulsoup4==4.12.3
 
 # Pipeline
-pandas==2.1.4
-pyarrow==14.0.2
+pandas>=2.1.4
 tqdm==4.66.1
 
 # Embeddings
@@ -23,5 +22,3 @@ streamlit==1.31.0
 
 # Utilitaires
 python-dotenv==1.0.0
-jupyter==1.0.0
-pytest==7.4.4
