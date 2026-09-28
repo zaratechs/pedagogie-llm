@@ -1,33 +1,26 @@
-  git-b 
- 374  git remote add origin https://github.com/zaratechs/cv.git
-  375  git init
-  376  git remote add origin https://github.com/zaratechs/cv.git
-  377   git config --global --add safe.directory F:/cvm/8-Dev/Workspace/blog
-  378  git add .
-  379  git commit -m "Blog pédagogique Réda Hamza"
-  380  git push -u origin master
-  381  git push origin
-  382  git push --set-upstream origin master
-  383  git remote add origin https://github.com/zaratechs/cv.git
-  384  git push --set-upstream origin master
+ - git-b 
+ - git remote add origin https://github.com/zaratechs/cv.git
+ - git init
+ - git remote add origin https://github.com/zaratechs/cv.git
+ - git config --global --add safe.directory F:/cvm/8-Dev/Workspace/blog
+ - git add .
+ - git commit -m "Blog pédagogique Réda Hamza"
+ - git push -u origin master
+ -  git push origin
+ -  git push --set-upstream origin master
+ -  git remote add origin https://github.com/zaratechs/cv.git
+ -   git push --set-upstream origin master
 
 
-git branch -M main
+## git branch -M main
+## git init
+## git checkout -b projetScormFactory
+###  Au besoin:  git config --global --add safe.directory F:/cvm/8-Dev/Workspace/competenceNum
 
-
-==>  git init
-
-  248  git checkout -b projetScormFactory
-
-           ==> Au besoin:  git config --global --add safe.directory F:/cvm/8-Dev/Workspace/competenceNum
-
-  249  git add .
-
-  250  git commit -m "Scorm Factory"
-
-  251  git remote add origin https://github.com/zaratechs/Projets_P-dagogiques_IA.git
-
-  252  git push -u origin projetScormFactory
+- git add .
+- git commit -m "Scorm Factory"
+- git remote add origin https://github.com/zaratechs/Projets_P-dagogiques_IA.git
+-  git push -u origin projetScormFactory
 
 =========================================================================
 
